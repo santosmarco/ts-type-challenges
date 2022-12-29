@@ -23,7 +23,7 @@ type Fill<
   Start extends number = 0,
   End extends number = T['length'],
   CurrIdxTuple extends unknown[] = [],
-  IsFilling extends boolean = false
+  IsFilling extends boolean = Start extends 0 ? true : false
 > = T extends []
   ? []
   : [Start, End] extends [End, Start]
@@ -37,7 +37,7 @@ type Fill<
         : IsFilling extends true
         ? N
         : Head,
-      Fill<
+      ...Fill<
         Rest,
         N,
         Start,
