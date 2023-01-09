@@ -16,14 +16,6 @@ type cases = [
 
 // ============= Your Code Here =============
 
-type GetRequired<T> = {
-  [K in keyof T as undefined extends T[K]
-    ? T[K] extends undefined
-      ? K
-      : never
-    : K]-?: T[K]
-} extends infer R
-  ? { [K in keyof R as [never, R[K]] extends [R[K], never] ? never : K]: R[K] }
-  : never
-
-type RequiredKeys<T> = keyof GetRequired<T>
+type RequiredKeys<T> = keyof {
+  [K in keyof T as T extends { [U in K]-?: unknown } ? K : never]-?: T[K]
+}
