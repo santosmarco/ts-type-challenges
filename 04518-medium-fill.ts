@@ -22,30 +22,26 @@ type Fill<
   N,
   Start extends number = 0,
   End extends number = T['length'],
-  CurrIdxTuple extends unknown[] = [],
-  IsFilling extends boolean = Start extends 0 ? true : false
+  Res extends unknown[] = []
 > = T extends []
-  ? []
-  : [Start, End] extends [End, Start]
-  ? T
-  : [Start, End] extends [0, T['length']]
-  ? { [K in keyof T]: N }
-  : T extends [infer Head, ...infer Rest]
-  ? [
-      [Start, CurrIdxTuple['length']] extends [CurrIdxTuple['length'], Start]
-        ? N
-        : IsFilling extends true
-        ? N
-        : Head,
-      ...Fill<
-        Rest,
-        N,
-        Start,
-        End,
-        [...CurrIdxTuple, unknown],
-        [Start, CurrIdxTuple['length']] extends [CurrIdxTuple['length'], Start]
-          ? true
-          : false
-      >
-    ]
+  ? Res
+  : T extends [infer H, ...infer R]
+  ? Fill<
+      R,
+      N,
+      (
+        Res['length'] extends Start
+          ? Res['length'] extends End
+            ? Start
+            : [...Res, N]['length']
+          : Start
+      ) extends infer S extends number
+        ? S
+        : never,
+      End,
+      [
+        ...Res,
+        Res['length'] extends Start ? (Res['length'] extends End ? H : N) : H
+      ]
+    >
   : never
