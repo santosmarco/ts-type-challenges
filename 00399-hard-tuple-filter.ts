@@ -26,21 +26,25 @@ type cases = [
 
 // ============= Your Code Here =============
 
-type FilterOut<T extends any[], F> = T extends []
-  ? []
-  : T extends [infer Head, ...infer Rest]
-  ? [Head, never] extends [never, Head]
-    ? FilterOut<Rest, F>
-    : [Head, F] extends [F, Head]
-    ? FilterOut<Rest, F>
-    : [Head, ...FilterOut<Rest, F>]
-  : never
-
-type c = FilterOut<[number | null | undefined, never], never | null | undefined>
-
-type c2 = FilterOut<
-  [never, 1, 'a', undefined, false, null],
-  never | null | undefined
+type FilterOut<T extends any[], F> = Unwrap<
+  PerformFilter<
+    EncapsulateUnionItems<T>,
+    [F] extends [never] ? [never] : EncapsulateUnion<F>
+  >
 >
 
-type b = number | null | undefined extends never | null | undefined ? 2 : 1
+type PerformFilter<T extends any[], F> = T extends []
+  ? []
+  : T extends [infer H, ...infer R]
+  ? H extends F
+    ? PerformFilter<R, F>
+    : [H, ...PerformFilter<R, F>]
+  : never
+
+type EncapsulateUnionItems<T extends readonly unknown[]> = {
+  [K in keyof T]: [T[K]]
+}
+
+type EncapsulateUnion<T> = T extends unknown ? [T] : never
+
+type Unwrap<T> = { [K in keyof T]: T[K] extends [infer U] ? U : never }

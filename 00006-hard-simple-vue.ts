@@ -43,7 +43,7 @@ SimpleVue({
 declare function SimpleVue<
   D extends Record<string, unknown>,
   C extends Record<string, (...args: readonly any[]) => any>,
-  M extends Record<string, (...args: readonly any[]) => any>
+  M extends Record<string, (...args: readonly any[]) => any & ThisType<M>>
 >(options: {
   readonly data: (this: void) => D
   readonly computed: C & ThisType<D>

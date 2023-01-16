@@ -39,6 +39,7 @@ type Filter<
   : never
 
 type Combination<T extends string[]> = {
-  // @ts-expect-error Type instantiation is excessively deep and possibly infinite.
-  [K in keyof T]: T[K] | `${T[K]} ${Combination<Filter<T, T[K]>>}`
+  [K in keyof T]:
+    | T[K]
+    | (T[K] extends string ? `${T[K]} ${Combination<Filter<T, T[K]>>}` : never)
 }[number]
