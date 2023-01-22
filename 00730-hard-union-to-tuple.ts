@@ -46,12 +46,6 @@ type GetUnionLast<T> = UnionToIntersectionFn<T> extends () => infer Last
   ? Last
   : never
 
-export type UnionToIntersection<T> = (
-  T extends unknown ? (x: T) => void : never
-) extends (i: infer I) => void
-  ? I
-  : never
-
 type UnionToTuple<T, Tuple extends unknown[] = []> = [T] extends [never]
   ? Tuple
   : UnionToTuple<Exclude<T, GetUnionLast<T>>, [GetUnionLast<T>, ...Tuple]>

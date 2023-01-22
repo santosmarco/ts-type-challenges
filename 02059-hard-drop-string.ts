@@ -25,8 +25,31 @@ type cases = [
 
 // ============= Your Code Here =============
 
-type DropString<S extends string, R extends string> = R extends ''
+type Split<S> = S extends ''
+  ? []
+  : S extends `${infer L}${infer R}`
+  ? [L, ...Split<R>]
+  : never
+
+type _DropString<S extends string, R extends string> = R extends ''
   ? S
-  : S extends `${infer L_}${R}${infer R_}`
-  ? `${L_}${DropString<R_, R>}`
+  : S extends `${infer L}${R}${infer Right}`
+  ? `${L}${_DropString<Right, R>}`
   : S
+
+type IterateAndDrop<
+  S extends string,
+  R extends readonly string[]
+> = R extends readonly []
+  ? S
+  : R extends readonly [
+      infer H extends string,
+      ...infer Rest extends readonly string[]
+    ]
+  ? IterateAndDrop<_DropString<S, H>, Rest>
+  : never
+
+type DropString<S extends string, R extends string> = IterateAndDrop<
+  S,
+  Split<R>
+>
