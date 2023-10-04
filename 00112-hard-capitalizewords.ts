@@ -14,16 +14,10 @@ type cases = [
       'Aa!Bb@Cc#Dd$Ee%Ff^Gg&Hh*Ii(Jj)Kk_Ll+Mm{Nn}Oo|Pp🤣Qq'
     >
   >,
-  Expect<Equal<CapitalizeWords<''>, ''>>
+  Expect<Equal<CapitalizeWords<''>, ''>>,
 ]
 
 // ============= Your Code Here =============
-
-type IsEmoji<S extends string> = S extends `${string}${infer R}`
-  ? R extends ''
-    ? 0
-    : 1
-  : never
 
 type _CapitalizeWords<S extends string> = S extends ''
   ? S

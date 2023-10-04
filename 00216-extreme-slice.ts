@@ -23,58 +23,59 @@ type cases = [
   // invalid
   Expect<Equal<Slice<Arr, 10>, []>>,
   Expect<Equal<Slice<Arr, 1, 0>, []>>,
-  Expect<Equal<Slice<Arr, 10, 20>, []>>
+  Expect<Equal<Slice<Arr, 10, 20>, []>>,
 ]
 
 // ============= Your Code Here =============
 
-declare const UNSET: unique symbol
+type IsNegative<T extends number> = `${T}` extends `-${number}` ? true : false
 
-type BuildTuple<
-  N extends number,
-  Res extends readonly unknown[] = []
-> = Res extends { readonly length: N } ? Res : BuildTuple<N, [...Res, unknown]>
+type Positive<T extends number> = `${T}` extends `-${infer U extends number}`
+  ? U
+  : T
 
-type Add<N0 extends number, N1 extends number> = [
-  ...BuildTuple<N0>,
-  ...BuildTuple<N1>
-]['length']
-
-type Subtract<
-  N0 extends number,
-  N1 extends number,
-  Res extends readonly unknown[] = []
-> = BuildTuple<N1> extends readonly []
-  ? [...Res, unknown]['length']
-  : [BuildTuple<N0>, BuildTuple<N1>] extends readonly [
-      [unknown, ...infer R0],
-      [unknown, ...infer R1]
-    ]
-  ? Subtract<R0['length'], R1['length'], [...Res, unknown]>
+type Reverse<T extends readonly unknown[]> = T extends readonly []
+  ? []
+  : T extends readonly [infer Head, ...infer Rest]
+  ? [...Reverse<Rest>, Head]
   : never
 
 type Slice<
-  Arr extends readonly unknown[],
+  Arr extends readonly number[],
   Start extends number = 0,
   End extends number = Arr['length'],
-  Res extends readonly unknown[] = [],
-  Head extends readonly unknown[] = []
-> = Arr extends readonly []
-  ? []
-  : Arr extends readonly [infer H, ...infer R]
-  ? Head['length'] extends Start
-    ? [...Head, ...Res]['length'] extends End
-      ? Res
-      : Slice<
-          R,
-          Head['length'],
-          End,
-          [...Res, H],
-          [...Head, ...Res, unknown]['length'] extends End
-            ? [...Head, unknown]
-            : Head
-        >
-    : Slice<R, Start, End, Res, [...Head, H]>
-  : Res
-
-type c = Subtract<5, 4>
+  _Acc extends readonly number[] = [],
+  _AccAll extends readonly undefined[] = [],
+  _HasStarted extends boolean = false,
+> = IsNegative<End> extends true
+  ? Reverse<Slice<Reverse<Arr>, Positive<End>, Positive<Start>>>
+  : [Start, End] extends [End, Start]
+  ? _Acc
+  : [End, _AccAll['length']] extends [_AccAll['length'], End]
+  ? _Acc
+  : [Start, _AccAll['length']] extends [_AccAll['length'], Start]
+  ? Slice<
+      Arr,
+      Start,
+      End,
+      [Arr[Start], undefined] extends [undefined, Arr[Start]]
+        ? []
+        : [Arr[Start]],
+      [..._AccAll, undefined],
+      true
+    >
+  : [_HasStarted, true] extends [true, _HasStarted]
+  ? Slice<
+      Arr,
+      Start,
+      End,
+      [Arr[_AccAll['length']], undefined] extends [
+        undefined,
+        Arr[_AccAll['length']],
+      ]
+        ? _Acc
+        : [..._Acc, Arr[_AccAll['length']]],
+      [..._AccAll, undefined],
+      true
+    >
+  : Slice<Arr, Start, End, _Acc, [..._AccAll, undefined], false>
