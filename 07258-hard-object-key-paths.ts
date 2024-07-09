@@ -58,16 +58,21 @@ type cases = [
 
 // ============= Your Code Here =============
 
+type TupleKeyPaths<T extends readonly unknown[]> = Exclude<
+  keyof T,
+  keyof unknown[]
+> extends infer X extends string
+  ? `.${X}` | `${'.' | ''}[${X}]`
+  : never
+
 export type ObjectKeyPaths<T extends object> = {
-  [K in keyof T]:
+  [K in Extract<keyof T, string>]:
     | K
     | (T[K] extends object
-        ? `${K & string}${T[K] extends readonly (infer U)[]
-            ?
-                | `.${ObjectKeyPaths<T[K]> & number}${U extends object
-                    ? ObjectKeyPaths<U> & string
-                    : ''}`
-                | `${'.' | ''}[${ObjectKeyPaths<T[K]> & number}]`
+        ? `${K}${T[K] extends readonly unknown[]
+            ? TupleKeyPaths<T[K]>
             : `.${ObjectKeyPaths<T[K]> & string}`}`
         : never)
-}[keyof T]
+}[Extract<keyof T, string>]
+
+type c = ObjectKeyPaths<typeof ref>
