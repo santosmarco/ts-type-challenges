@@ -23,10 +23,15 @@ type cases = [
   // invalid
   Expect<Equal<Slice<Arr, 10>, []>>,
   Expect<Equal<Slice<Arr, 1, 0>, []>>,
-  Expect<Equal<Slice<Arr, 10, 20>, []>>,
+  Expect<Equal<Slice<Arr, 10, 20>, []>>
 ]
 
 // ============= Your Code Here =============
+
+type _BuildTuple<
+  T extends number,
+  _Acc extends readonly unknown[] = []
+> = _Acc['length'] extends T ? _Acc : _BuildTuple<T, [..._Acc, unknown]>
 
 type IsNegative<T extends number> = `${T}` extends `-${number}` ? true : false
 
@@ -40,15 +45,34 @@ type Reverse<T extends readonly unknown[]> = T extends readonly []
   ? [...Reverse<Rest>, Head]
   : never
 
+type _Subtract<
+  X extends number,
+  Y extends number,
+  _AccX extends readonly unknown[] = _BuildTuple<X>,
+  _AccY extends readonly unknown[] = []
+> = _AccY['length'] extends Y
+  ? _AccX['length']
+  : _AccX extends readonly [infer _, ...infer TTail]
+  ? _Subtract<X, Y, TTail, [..._AccY, unknown]>
+  : never
+type Subtract<X extends number, Y extends number> = _Subtract<
+  X,
+  Y
+> extends infer TRes extends number
+  ? TRes
+  : never
+
 type Slice<
   Arr extends readonly number[],
   Start extends number = 0,
   End extends number = Arr['length'],
   _Acc extends readonly number[] = [],
   _AccAll extends readonly undefined[] = [],
-  _HasStarted extends boolean = false,
+  _HasStarted extends boolean = false
 > = IsNegative<End> extends true
-  ? Reverse<Slice<Reverse<Arr>, Positive<End>, Positive<Start>>>
+  ? IsNegative<Start> extends true
+    ? Reverse<Slice<Reverse<Arr>, Positive<End>, Positive<Start>>>
+    : Slice<Arr, Start, Subtract<Arr['length'], Positive<End>>>
   : [Start, End] extends [End, Start]
   ? _Acc
   : [End, _AccAll['length']] extends [_AccAll['length'], End]
@@ -71,7 +95,7 @@ type Slice<
       End,
       [Arr[_AccAll['length']], undefined] extends [
         undefined,
-        Arr[_AccAll['length']],
+        Arr[_AccAll['length']]
       ]
         ? _Acc
         : [..._Acc, Arr[_AccAll['length']]],
