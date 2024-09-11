@@ -14,7 +14,7 @@ const ref = {
       },
     ],
   },
-}
+} as const
 
 type cases = [
   Expect<Equal<ObjectKeyPaths<{ name: string; age: number }>, 'name' | 'age'>>,
@@ -58,21 +58,25 @@ type cases = [
 
 // ============= Your Code Here =============
 
-type TupleKeyPaths<T extends readonly unknown[]> = Exclude<
-  keyof T,
-  keyof unknown[]
-> extends infer X extends string
-  ? `.${X}` | `${'.' | ''}[${X}]`
+type Replace<
+  T extends string,
+  U extends string,
+  V extends string
+> = T extends `${infer TLeft}${U}${infer TRight}`
+  ? `${TLeft}${V}${Replace<TRight, U, V>}`
+  : T
+
+type _ObjectKeyPaths<T> = T extends object
+  ? T extends readonly unknown[]
+    ? _ObjectKeyPaths<{
+        [K in keyof T as K extends `${infer N extends number}`
+          ? N | `[${N}]`
+          : never]: T[K]
+      }>
+    : {
+        [K in Exclude<keyof T, symbol>]: K | `${K}.${_ObjectKeyPaths<T[K]>}`
+      }[Exclude<keyof T, symbol>]
   : never
-
-export type ObjectKeyPaths<T extends object> = {
-  [K in Extract<keyof T, string>]:
-    | K
-    | (T[K] extends object
-        ? `${K}${T[K] extends readonly unknown[]
-            ? TupleKeyPaths<T[K]>
-            : `.${ObjectKeyPaths<T[K]> & string}`}`
-        : never)
-}[Extract<keyof T, string>]
-
-type c = ObjectKeyPaths<typeof ref>
+type ObjectKeyPaths<T> =
+  | _ObjectKeyPaths<T>
+  | Replace<_ObjectKeyPaths<T> & string, '.[', '['>
